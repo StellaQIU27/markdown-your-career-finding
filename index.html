@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Markdown Your Career Finding</title>
+<style>
+:root{
+  --ground:#F4F6F3; --surface:#FFFFFF; --ink:#1B2420; --muted:#66736C; --line:#DAE0DA;
+  --accent:#1F6F63; --accent-ink:#FFFFFF; --accent-soft:#E2EFEC;
+  --wait:#2E6FB8; --wait-bg:#E4EEF9; --live:#A8690F; --live-bg:#FBEFD8;
+  --offer:#2A7D52; --offer-bg:#DDF1E5; --closed:#737D77; --closed-bg:#E8EBE8; --danger:#B3362B;
+  --shadow:0 1px 2px rgba(27,36,32,.06),0 6px 20px rgba(27,36,32,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#121715; --surface:#1B2220; --ink:#E8EEEA; --muted:#97A59E; --line:#2D3733;
+    --accent:#4FB3A3; --accent-ink:#0D1513; --accent-soft:#1E332F;
+    --wait:#7FB2EC; --wait-bg:#1C2A3B; --live:#E6B565; --live-bg:#3A2E17;
+    --offer:#6FCB97; --offer-bg:#193326; --closed:#8E9A94; --closed-bg:#262E2B; --danger:#F08A7E;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#121715; --surface:#1B2220; --ink:#E8EEEA; --muted:#97A59E; --line:#2D3733;
+  --accent:#4FB3A3; --accent-ink:#0D1513; --accent-soft:#1E332F;
+  --wait:#7FB2EC; --wait-bg:#1C2A3B; --live:#E6B565; --live-bg:#3A2E17;
+  --offer:#6FCB97; --offer-bg:#193326; --closed:#8E9A94; --closed-bg:#262E2B; --danger:#F08A7E;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;padding-inline:16px;padding-block:0 96px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ground);padding-block:14px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.titlebar{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;margin:0;letter-spacing:.02em;font-weight:700}
+.sync{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px}
+.tab{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 6px;font:inherit;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.3}
+.tab b{font-size:17px;font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 11px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.chip span{font-variant-numeric:tabular-nums;margin-left:4px}
+.list{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.card.closed{opacity:.62}
+.row1{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.org{font-weight:700;font-size:16px;line-height:1.35}
+.role{color:var(--ink);font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.pill{border-radius:6px;padding:1px 7px;font-size:12px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.hi{color:var(--danger);border-color:currentColor}
+.status{appearance:none;-webkit-appearance:none;border:0;border-radius:8px;padding:5px 24px 5px 10px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;flex:none;max-width:48%;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 13px) 55%,calc(100% - 8px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.s-wait{background-color:var(--wait-bg);color:var(--wait)} .s-live{background-color:var(--live-bg);color:var(--live)}
+.s-offer{background-color:var(--offer-bg);color:var(--offer)} .s-closed{background-color:var(--closed-bg);color:var(--closed)}
+.s-sent{background-color:var(--accent-soft);color:var(--accent)} .s-none{background-color:var(--closed-bg);color:var(--muted)}
+.latest{font-size:13px;color:var(--muted);border-left:2px solid var(--line);padding-left:8px;overflow-wrap:anywhere}
+.next{font-size:13px;overflow-wrap:anywhere}.next b{color:var(--accent);font-weight:600}
+.actions{display:flex;gap:14px;font-size:13px;align-items:center}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+a.linkbtn{display:inline-block}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:28px 16px;text-align:center;color:var(--muted)}
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:13px 20px;font:inherit;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer;z-index:6}
+dialog{border:0;padding:0;background:var(--surface);color:var(--ink);width:min(640px,100%);max-width:100%;max-height:92%;border-radius:16px;margin:auto}
+@media (max-width:640px){dialog{margin:auto 0 0 0;border-radius:16px 16px 0 0;width:100%;max-height:94%}}
+dialog::backdrop{background:rgba(10,16,14,.5)}
+.sheet{display:flex;flex-direction:column;max-height:92vh}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);gap:10px}
+.sheet-head h2{font-size:17px;margin:0}
+.sheet-body{padding:14px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-foot{display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);justify-content:space-between;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.grid2{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);letter-spacing:.04em}
+label.f input,label.f select,label.f textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%;letter-spacing:0}
+label.f textarea{min-height:64px;resize:vertical;line-height:1.5}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:9px 16px;font:inherit;font-size:15px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.danger{color:var(--danger);border-color:transparent;padding-inline:6px}
+.logbox{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.logbox h3{margin:0;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.logitem{display:flex;gap:8px;font-size:14px;align-items:flex-start}
+.logitem time{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px;padding-top:1px}
+.logitem span{flex:1;overflow-wrap:anywhere}
+.logadd{display:flex;gap:6px;flex-wrap:wrap}
+.logadd input[type=date]{flex:none;width:150px}.logadd input[type=text]{flex:1;min-width:140px}
+.logadd input{font:inherit;font-size:16px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+.x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 4px}
+.banner{background:var(--live-bg);color:var(--live);border-radius:10px;padding:10px 12px;font-size:13px}
+.tools{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+#io_text{width:100%;min-height:260px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:9px;padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="titlebar"><h1>求职投递台账</h1><span class="sync" id="sync">正在连接…</span></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="chips" id="chips"></div>
+  </header>
+  <div class="tools"><button class="linkbtn" type="button" id="exp_md">导出 Markdown</button><button class="linkbtn" type="button" id="exp_json">导出 JSON 备份</button><button class="linkbtn" type="button" id="imp_json">导入 JSON</button></div>
+  <div class="banner" id="banner" hidden></div>
+  <main class="list" id="list"></main>
+</div>
+<button class="fab" id="add" type="button">＋ 新增一条</button>
+
+<dialog id="dlg">
+  <form class="sheet" id="form" method="dialog">
+    <div class="sheet-head"><h2 id="dlgTitle">编辑</h2><button class="x" type="button" id="close" aria-label="关闭">✕</button></div>
+    <div class="sheet-body">
+      <div class="grid2">
+        <label class="f">分类<select id="f_track"><option value="company">企业</option><option value="postdoc">博后</option><option value="faculty">高校教职</option></select></label>
+        <label class="f">当前状态<select id="f_status"></select></label>
+      </div>
+      <label class="f"><span id="l_org">公司</span><input id="f_org" type="text" autocomplete="off" required></label>
+      <label class="f"><span id="l_role">岗位名称</span><input id="f_role" type="text" autocomplete="off"></label>
+      <div class="grid2">
+        <label class="f"><span id="l_type">岗位类型</span><input id="f_type" type="text" list="typelist" autocomplete="off"><datalist id="typelist"></datalist></label>
+        <label class="f">优先级<select id="f_priority"><option value="">未定</option><option>高</option><option>中</option><option>低</option></select></label>
+      </div>
+      <div class="grid2">
+        <label class="f"><span id="l_dir">方向 / 意向</span><input id="f_direction" type="text" autocomplete="off"></label>
+        <label class="f">地点<input id="f_city" type="text" autocomplete="off"></label>
+      </div>
+      <div class="grid2">
+        <label class="f">投递 / 申请日期<input id="f_applied" type="date"></label>
+        <label class="f"><span id="l_contact">联系人 / 内推</span><input id="f_contact" type="text" autocomplete="off"></label>
+      </div>
+      <label class="f">投递渠道 / 链接<input id="f_link" type="text" inputmode="url" autocomplete="off" placeholder="https://… 或 邮箱"></label>
+      <label class="f">下一步 / 截止日期<input id="f_next" type="text" autocomplete="off"></label>
+      <div class="logbox">
+        <h3>推进记录</h3>
+        <div id="logs"></div>
+        <div class="logadd"><input type="date" id="log_d" aria-label="日期"><input type="text" id="log_t" placeholder="例如：一面，45 分钟，问了项目细节" aria-label="事件"><button class="btn" type="button" id="log_add">记一笔</button></div>
+      </div>
+      <label class="f">备注<textarea id="f_note"></textarea></label>
+    </div>
+    <div class="sheet-foot"><button class="btn danger" type="button" id="del">删除</button><div style="display:flex;gap:10px"><button class="btn" type="button" id="cancel">取消</button><button class="btn primary" type="submit" id="save">保存</button></div></div>
+  </form>
+</dialog>
+
+<dialog id="io"><div class="sheet"><div class="sheet-head"><h2 id="io_title">导出</h2><button class="x" type="button" id="io_close" aria-label="关闭">✕</button></div><div class="sheet-body"><p id="io_hint" style="margin:0;color:var(--muted);font-size:13px"></p><textarea id="io_text" spellcheck="false"></textarea></div><div class="sheet-foot"><span></span><div style="display:flex;gap:10px"><button class="btn" type="button" id="io_copy">复制</button><button class="btn primary" type="button" id="io_apply" hidden>导入并覆盖</button></div></div></div></dialog>
+
+<script>
+const TRACKS=[{k:'company',n:'企业',org:'公司',role:'岗位名称',type:'岗位类型',dir:'方向 / 意向',contact:'联系人 / 内推',types:['校招','实习','博士专项','社招']},
+ {k:'postdoc',n:'博后',org:'单位 / 学校',role:'院系 / 实验室',type:'合作导师',dir:'研究方向',contact:'联系人',types:[]},
+ {k:'faculty',n:'高校教职',org:'学校',role:'学院 / 部门',type:'岗位类型',dir:'学科方向',contact:'联系人',types:['教研岗','高层次人才（教师）','科研岗','科研行政岗']}];
+const STATUS=['待投递','待提交','已投递','简历筛选中','笔试/测评','一面','二面','三面/终面','HR面','Offer','未通过','已放弃'];
+const GROUPS=[{n:'全部',f:()=>true},{n:'待投',f:s=>s==='待投递'||s==='待提交'||!s},{n:'已投待回复',f:s=>s==='已投递'||s==='简历筛选中'},
+ {n:'面试中',f:s=>['笔试/测评','一面','二面','三面/终面','HR面'].includes(s)},{n:'Offer',f:s=>s==='Offer'},{n:'已结束',f:s=>s==='未通过'||s==='已放弃'}];
+const cls=s=>!s?'s-none':(s==='待投递'||s==='待提交')?'s-wait':(s==='已投递'||s==='简历筛选中')?'s-sent':s==='Offer'?'s-offer':(s==='未通过'||s==='已放弃')?'s-closed':'s-live';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let db=null,col=null,items=[],track='company',group=0,editing=null,draftLog=[],canWrite=true;
+try{track=localStorage.getItem('track')||'company'}catch(e){}
+
+function renderTabs(){
+  $('tabs').innerHTML=TRACKS.map(t=>`<button class="tab" role="tab" type="button" data-k="${t.k}" aria-selected="${t.k===track}">${t.n}<b>${items.filter(i=>i.track===t.k).length}</b></button>`).join('');
+  const mine=items.filter(i=>i.track===track);
+  $('chips').innerHTML=GROUPS.map((g,i)=>`<button class="chip" type="button" data-g="${i}" aria-pressed="${i===group}">${g.n}<span>${mine.filter(x=>g.f(x.status)).length}</span></button>`).join('');
+}
+function renderList(){
+  const t=TRACKS.find(x=>x.k===track);
+  const rank=s=>{const i=STATUS.indexOf(s);return (s==='未通过'||s==='已放弃')?99:(i<0?50:i>=4&&i<=9?-10+(9-i):i)};
+  const pr={'高':0,'中':1,'低':2};
+  const rows=items.filter(i=>i.track===track&&GROUPS[group].f(i.status)).sort((a,b)=>rank(a.status)-rank(b.status)||(pr[a.priority]??3)-(pr[b.priority]??3)||String(a.org).localeCompare(String(b.org),'zh'));
+  if(!rows.length){$('list').innerHTML=`<div class="empty">${db?'这个分类下还没有记录。点右下角“新增一条”开始记。':'数据还没连上。稍等片刻，或刷新页面。'}</div>`;return}
+  $('list').innerHTML=rows.map(i=>{
+    const last=(i.log||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0];
+    const href=/^https?:\/\//.test(i.link||'')?i.link:'';
+    const closed=i.status==='未通过'||i.status==='已放弃';
+    return `<article class="card${closed?' closed':''}">
+      <div class="row1"><div><div class="org">${esc(i.org)}</div><div class="role">${esc(i.role)}</div></div>
+        <select class="status ${cls(i.status)}" data-id="${esc(i.id)}" aria-label="状态" ${canWrite?'':'disabled'}><option value="">未填</option>${STATUS.map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="meta">${i.type?`<span class="pill">${esc(i.type)}</span>`:''}${i.priority?`<span class="pill${i.priority==='高'?' hi':''}">优先级 ${esc(i.priority)}</span>`:''}${i.direction?`<span>${esc(i.direction)}</span>`:''}${i.city?`<span>· ${esc(i.city)}</span>`:''}${i.applied?`<span>· 投递 ${esc(i.applied)}</span>`:''}</div>
+      ${last?`<div class="latest">${esc(last.d)}　${esc(last.t)}</div>`:''}
+      ${i.next?`<div class="next"><b>下一步</b>　${esc(i.next)}</div>`:''}
+      <div class="actions"><button class="linkbtn" type="button" data-edit="${esc(i.id)}">${canWrite?'编辑 / 记进展':'查看详情'}</button>${href?`<a class="linkbtn" href="${esc(href)}" target="_blank" rel="noopener">打开投递页</a>`:(i.link?`<span style="color:var(--muted)">${esc(i.link)}</span>`:'')}</div>
+    </article>`}).join('');
+}
+function render(){renderTabs();renderList()}
+
+function labelsFor(k){const t=TRACKS.find(x=>x.k===k);$('l_org').textContent=t.org;$('l_role').textContent=t.role;$('l_type').textContent=t.type;$('l_dir').textContent=t.dir;$('l_contact').textContent=t.contact;$('typelist').innerHTML=t.types.map(x=>`<option value="${x}">`).join('')}
+function renderLogs(){
+  $('logs').innerHTML=draftLog.length?draftLog.map((l,i)=>`<div class="logitem"><time>${esc(l.d)}</time><span>${esc(l.t)}</span><button class="x" type="button" data-rm="${i}" aria-label="删除这条记录">✕</button></div>`).join(''):'<div style="color:var(--muted);font-size:13px">还没有记录。投递、笔试、每一轮面试都可以记一笔。</div>';
+}
+function openEditor(item){
+  editing=item?item.id:null;
+  const v=item||{track,status:'待投递',priority:'中'};
+  $('dlgTitle').textContent=item?'编辑 / 记进展':'新增一条';
+  $('f_status').innerHTML='<option value="">未填</option>'+STATUS.map(s=>`<option>${s}</option>`).join('');
+  for(const f of ['track','status','org','role','type','priority','direction','city','applied','contact','link','next','note']) $('f_'+f).value=v[f]??'';
+  labelsFor($('f_track').value);
+  draftLog=(v.log||[]).map(l=>({d:l.d,t:l.t})).sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+  $('log_d').value=today();$('log_t').value='';renderLogs();
+  $('del').hidden=!item;$('del').textContent='删除';$('del').dataset.armed='';
+  $('save').disabled=!canWrite;
+  $('dlg').showModal();
+}
+function pushLog(){const t=$('log_t').value.trim();if(!t)return;draftLog.push({d:$('log_d').value||today(),t});draftLog.sort((a,b)=>String(a.d).localeCompare(String(b.d)));$('log_t').value='';renderLogs()}
+function fail(e){const m={quota_exceeded:'记录数已达上限，先删掉一些旧记录。',revoked:'访问权限已变更，当前只能查看。',invalid_argument:'没有写入权限，当前只能查看。'}[e&&e.code]||'保存失败，请稍后再试。';$('banner').textContent=m;$('banner').hidden=false;if(e&&(e.code==='revoked'||e.code==='invalid_argument')){canWrite=false;render()}}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-k]');if(t){track=t.dataset.k;group=0;try{localStorage.setItem('track',track)}catch(_){ }render();return}
+  const g=e.target.closest('[data-g]');if(g){group=+g.dataset.g;render();return}
+  const ed=e.target.closest('[data-edit]');if(ed){openEditor(items.find(i=>i.id===ed.dataset.edit));return}
+  const rm=e.target.closest('[data-rm]');if(rm){draftLog.splice(+rm.dataset.rm,1);renderLogs();return}
+});
+document.addEventListener('change',async e=>{
+  const s=e.target.closest('select.status');if(!s||!col)return;
+  const it=items.find(i=>i.id===s.dataset.id);if(!it||it.status===s.value)return;
+  const log=(it.log||[]).concat([{d:today(),t:'状态改为：'+(s.value||'未填')}]);
+  const patch={status:s.value,log,updated:today()};
+  if(s.value==='已投递'&&!it.applied)patch.applied=today();
+  try{await col.doc(it.id).update(patch)}catch(err){fail(err)}
+});
+$('f_track').addEventListener('change',()=>labelsFor($('f_track').value));
+$('add').addEventListener('click',()=>openEditor(null));
+$('close').addEventListener('click',()=>$('dlg').close());
+$('cancel').addEventListener('click',()=>$('dlg').close());
+$('log_add').addEventListener('click',pushLog);
+$('log_t').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pushLog()}});
+$('del').addEventListener('click',async()=>{
+  if(!$('del').dataset.armed){$('del').dataset.armed='1';$('del').textContent='再点一次确认删除';return}
+  try{await col.doc(editing).delete();$('dlg').close()}catch(err){fail(err)}
+});
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault();if(!col)return;pushLog();
+  const data={log:draftLog,updated:today()};
+  for(const f of ['track','status','org','role','type','priority','direction','city','applied','contact','link','next','note']) data[f]=$('f_'+f).value.trim();
+  $('save').disabled=true;
+  try{ if(editing) await col.doc(editing).set(data); else await col.add(data); track=data.track; $('dlg').close() }catch(err){fail(err)} finally{$('save').disabled=!canWrite}
+});
+
+render();
+// ---- localStorage-backed store with the same small interface the page uses ----
+const KEY='career-tracker-v1';
+const store={load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}},save(a){try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){fail({code:'quota_exceeded'})}}};
+function emit(){items=store.load();$('sync').textContent='保存在本机浏览器 · 共 '+items.length+' 条';render()}
+const uid=()=>'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+col={doc:id=>({update:async p=>{const a=store.load();const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]=Object.assign({},a[i],p);store.save(a);emit()}},
+  set:async d=>{const a=store.load();const i=a.findIndex(x=>x.id===id);const row=Object.assign({id},d);if(i>=0)a[i]=row;else a.push(row);store.save(a);emit()},
+  delete:async()=>{store.save(store.load().filter(x=>x.id!==id));emit()}}),
+  add:async d=>{const a=store.load();a.push(Object.assign({id:uid()},d));store.save(a);emit()}};
+db=true;
+const SAMPLE=[{id:'s1',track:'company',org:'示例科技',role:'【校招】规划算法工程师',type:'校招',direction:'自动驾驶规划',city:'深圳',priority:'高',link:'https://example.com/jobs/1',applied:'2026-09-01',status:'一面',log:[{d:'2026-09-01',t:'官网投递'},{d:'2026-09-10',t:'一面，45 分钟'}],next:'等二面通知',contact:'',note:'这是示例数据，可直接删除'},
+ {id:'s2',track:'postdoc',org:'示例大学',role:'智能系统实验室',type:'张教授',direction:'世界模型',city:'杭州',priority:'中',link:'',applied:'',status:'待投递',log:[],next:'准备研究计划',contact:'',note:'示例'},
+ {id:'s3',track:'faculty',org:'示例学院',role:'交通学院',type:'教研岗',direction:'智能交通',city:'上海',priority:'中',link:'',applied:'',status:'待投递',log:[],next:'',contact:'',note:'示例'}];
+let first=false;try{first=localStorage.getItem(KEY)===null}catch(e){$('banner').textContent='当前浏览器禁用了本地存储，记录无法保存。请换一个浏览器或关闭无痕模式。';$('banner').hidden=false}
+if(first)store.save(SAMPLE);
+emit();
+
+// ---- export / import ----
+function toMarkdown(){
+  const cell=s=>String(s??'').replace(/\|/g,'\\|').replace(/\n/g,' ');
+  let md='# 求职投递台账\n\n> 导出时间：'+today()+'\n';
+  for(const t of TRACKS){const rows=items.filter(i=>i.track===t.k);md+='\n## '+t.n+'（'+rows.length+'）\n\n';
+    if(!rows.length){md+='_暂无记录_\n';continue}
+    md+='| '+t.org+' | '+t.role+' | '+t.type+' | 状态 | 投递日期 | 下一步 | 最新进展 |\n|---|---|---|---|---|---|---|\n';
+    for(const r of rows){const last=(r.log||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0];
+      md+='| '+[r.org,r.role,r.type,r.status||'未填',r.applied,r.next,last?last.d+' '+last.t:''].map(cell).join(' | ')+' |\n'}
+    for(const r of rows.filter(x=>(x.log||[]).length)){md+='\n### '+r.org+' · '+r.role+'\n\n';for(const l of r.log)md+='- '+l.d+'　'+l.t+'\n'}}
+  return md}
+function openIO(title,hint,text,importing){$('io_title').textContent=title;$('io_hint').textContent=hint;$('io_text').value=text;$('io_text').readOnly=!importing;$('io_apply').hidden=!importing;$('io_copy').hidden=importing;$('io').showModal()}
+$('exp_md').addEventListener('click',()=>openIO('导出 Markdown','复制下面的内容，粘贴到任意 .md 文件、笔记或 GitHub 仓库里。',toMarkdown(),false));
+$('exp_json').addEventListener('click',()=>openIO('导出 JSON 备份','完整数据备份。换手机或换浏览器时，用“导入 JSON”恢复。',JSON.stringify(items,null,1),false));
+$('imp_json').addEventListener('click',()=>openIO('导入 JSON','粘贴之前导出的 JSON。导入会覆盖当前浏览器里的全部记录。','',true));
+$('io_close').addEventListener('click',()=>$('io').close());
+$('io_copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('io_text').value);$('io_copy').textContent='已复制'}catch(e){$('io_text').select()}setTimeout(()=>$('io_copy').textContent='复制',1500)});
+$('io_apply').addEventListener('click',()=>{try{const a=JSON.parse($('io_text').value);if(!Array.isArray(a))throw 0;store.save(a.map(x=>Object.assign({id:x.id||uid()},x)));emit();$('io').close()}catch(e){$('io_hint').textContent='格式不对：需要一个 JSON 数组。'}});
+</script>
+
+</body>
+</html>
