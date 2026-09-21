@@ -91,6 +91,23 @@ label.f textarea{min-height:64px;resize:vertical;line-height:1.5}
 .logadd input[type=date]{flex:none;width:150px}.logadd input[type=text]{flex:1;min-width:140px}
 .logadd input{font:inherit;font-size:16px;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
 .x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 4px}
+.viewsw{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.viewsw button{border:0;background:var(--surface);color:var(--muted);font:inherit;font-size:13px;padding:4px 10px;cursor:pointer}
+.viewsw button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.filterrow{display:flex;gap:8px;align-items:center}
+.filterrow .chips{flex:1;min-width:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow)}
+table.tbl{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+.tbl th{position:sticky;top:0;text-align:left;font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;padding:9px 10px;border-bottom:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45;overflow-wrap:anywhere}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr.closed td{opacity:.6}
+.tbl td.c-org{position:sticky;left:0;background:var(--surface);font-weight:700;min-width:96px;max-width:130px;box-shadow:1px 0 0 var(--line)}
+.tbl th.c-org{left:0;z-index:2;box-shadow:1px 0 0 var(--line)}
+.tbl td.c-role{min-width:170px}.tbl td.c-next,.tbl td.c-last{min-width:150px;color:var(--muted)}
+.tbl td.c-date{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl .status{max-width:none;font-size:12px;padding:4px 22px 4px 8px}
+.tbl .sub{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .banner{background:var(--live-bg);color:var(--live);border-radius:10px;padding:10px 12px;font-size:13px}
 .tools{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
 #io_text{width:100%;min-height:260px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:9px;padding:10px}
@@ -101,7 +118,7 @@ label.f textarea{min-height:64px;resize:vertical;line-height:1.5}
   <header class="top">
     <div class="titlebar"><h1>求职投递台账</h1><span class="sync" id="sync">正在连接…</span></div>
     <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="chips" id="chips"></div>
+    <div class="filterrow"><div class="chips" id="chips"></div><div class="viewsw" role="group" aria-label="视图"><button type="button" data-v="table" id="v_table">列表</button><button type="button" data-v="cards" id="v_cards">卡片</button></div></div>
   </header>
   <div class="tools"><button class="linkbtn" type="button" id="exp_md">导出 Markdown</button><button class="linkbtn" type="button" id="exp_json">导出 JSON 备份</button><button class="linkbtn" type="button" id="imp_json">导入 JSON</button></div>
   <div class="banner" id="banner" hidden></div>
@@ -157,8 +174,8 @@ const cls=s=>!s?'s-none':(s==='待投递'||s==='待提交')?'s-wait':(s==='已�
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-let db=null,col=null,items=[],track='company',group=0,editing=null,draftLog=[],canWrite=true;
-try{track=localStorage.getItem('track')||'company'}catch(e){}
+let db=null,col=null,items=[],track='company',group=0,editing=null,draftLog=[],canWrite=true,view='table';
+try{track=localStorage.getItem('track')||'company';view=localStorage.getItem('view')||'table'}catch(e){}
 
 function renderTabs(){
   $('tabs').innerHTML=TRACKS.map(t=>`<button class="tab" role="tab" type="button" data-k="${t.k}" aria-selected="${t.k===track}">${t.n}<b>${items.filter(i=>i.track===t.k).length}</b></button>`).join('');
@@ -171,6 +188,19 @@ function renderList(){
   const pr={'高':0,'中':1,'低':2};
   const rows=items.filter(i=>i.track===track&&GROUPS[group].f(i.status)).sort((a,b)=>rank(a.status)-rank(b.status)||(pr[a.priority]??3)-(pr[b.priority]??3)||String(a.org).localeCompare(String(b.org),'zh'));
   if(!rows.length){$('list').innerHTML=`<div class="empty">${db?'这个分类下还没有记录。点右下角“新增一条”开始记。':'数据还没连上。稍等片刻，或刷新页面。'}</div>`;return}
+  $('v_table').setAttribute('aria-pressed',view==='table');$('v_cards').setAttribute('aria-pressed',view==='cards');
+  if(view==='table'){
+    $('list').innerHTML='<div class="tablewrap"><table class="tbl"><thead><tr><th class="c-org">'+esc(t.org)+'</th><th>状态</th><th>'+esc(t.role)+'</th><th>'+esc(t.type)+'</th><th>投递日期</th><th>下一步</th><th>最新进展</th><th></th></tr></thead><tbody>'+rows.map(i=>{
+      const last=(i.log||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0];
+      const closed=i.status==='未通过'||i.status==='已放弃';
+      const href=/^https?:\/\//.test(i.link||'')?i.link:'';
+      return `<tr class="${closed?'closed':''}"><td class="c-org">${esc(i.org)}${i.priority?`<span class="sub">优先级 ${esc(i.priority)}</span>`:''}</td>
+        <td><select class="status ${cls(i.status)}" data-id="${esc(i.id)}" aria-label="状态" ${canWrite?'':'disabled'}><option value="">未填</option>${STATUS.map(x=>`<option ${x===i.status?'selected':''}>${x}</option>`).join('')}</select></td>
+        <td class="c-role">${esc(i.role)}${i.direction||i.city?`<span class="sub">${esc([i.direction,i.city].filter(Boolean).join(' · '))}</span>`:''}</td>
+        <td>${esc(i.type)}</td>
+        <td class="c-date">${esc(i.applied||'—')}</td><td class="c-next">${esc(i.next)}</td><td class="c-last">${last?esc(last.d+' '+last.t):''}</td>
+        <td style="white-space:nowrap"><button class="linkbtn" type="button" data-edit="${esc(i.id)}">${canWrite?'编辑':'详情'}</button>${href?` <a class="linkbtn" href="${esc(href)}" target="_blank" rel="noopener">链接</a>`:''}</td></tr>`}).join('')+'</tbody></table></div>';
+    return}
   $('list').innerHTML=rows.map(i=>{
     const last=(i.log||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0];
     const href=/^https?:\/\//.test(i.link||'')?i.link:'';
@@ -208,6 +238,7 @@ function fail(e){const m={quota_exceeded:'记录数已达上限，先删掉一�
 
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-k]');if(t){track=t.dataset.k;group=0;try{localStorage.setItem('track',track)}catch(_){ }render();return}
+  const vw=e.target.closest('[data-v]');if(vw){view=vw.dataset.v;try{localStorage.setItem('view',view)}catch(_){ }render();return}
   const g=e.target.closest('[data-g]');if(g){group=+g.dataset.g;render();return}
   const ed=e.target.closest('[data-edit]');if(ed){openEditor(items.find(i=>i.id===ed.dataset.edit));return}
   const rm=e.target.closest('[data-rm]');if(rm){draftLog.splice(+rm.dataset.rm,1);renderLogs();return}
