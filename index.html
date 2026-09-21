@@ -142,7 +142,7 @@ table.tbl{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
       </div>
       <div class="grid2">
         <label class="f"><span id="l_dir">方向 / 意向</span><input id="f_direction" type="text" autocomplete="off"></label>
-        <label class="f">地点<input id="f_city" type="text" autocomplete="off"></label>
+        <label class="f">地区 / 城市<span style="display:flex;gap:6px"><select id="f_region" style="flex:none;width:96px"><option value="">未定</option><option>内地</option><option>香港</option><option>海外</option></select><input id="f_city" type="text" autocomplete="off"></span></label>
       </div>
       <div class="grid2">
         <label class="f">投递 / 申请日期<input id="f_applied" type="date"></label>
@@ -174,19 +174,19 @@ const cls=s=>!s?'s-none':(s==='待投递'||s==='待提交')?'s-wait':(s==='已�
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-let db=null,col=null,items=[],track='company',group=0,editing=null,draftLog=[],canWrite=true,view='table';
+let db=null,col=null,items=[],track='company',group=0,editing=null,draftLog=[],canWrite=true,view='table',region='';
 try{track=localStorage.getItem('track')||'company';view=localStorage.getItem('view')||'table'}catch(e){}
 
 function renderTabs(){
   $('tabs').innerHTML=TRACKS.map(t=>`<button class="tab" role="tab" type="button" data-k="${t.k}" aria-selected="${t.k===track}">${t.n}<b>${items.filter(i=>i.track===t.k).length}</b></button>`).join('');
   const mine=items.filter(i=>i.track===track);
-  $('chips').innerHTML=GROUPS.map((g,i)=>`<button class="chip" type="button" data-g="${i}" aria-pressed="${i===group}">${g.n}<span>${mine.filter(x=>g.f(x.status)).length}</span></button>`).join('');
+  $('chips').innerHTML=GROUPS.map((g,i)=>`<button class="chip" type="button" data-g="${i}" aria-pressed="${i===group}">${g.n}<span>${mine.filter(x=>g.f(x.status)&&(!region||x.region===region)).length}</span></button>`).join('')+'<span style="flex:none;width:1px;background:var(--line);margin-inline:4px"></span>'+['','内地','香港','海外'].filter(r=>!r||mine.some(x=>x.region===r)).map(r=>`<button class="chip" type="button" data-r="${r}" aria-pressed="${r===region}">${r||'全部地区'}${r?`<span>${mine.filter(x=>x.region===r).length}</span>`:''}</button>`).join('');
 }
 function renderList(){
   const t=TRACKS.find(x=>x.k===track);
   const rank=s=>{const i=STATUS.indexOf(s);return (s==='未通过'||s==='已放弃')?99:(i<0?50:i>=4&&i<=9?-10+(9-i):i)};
   const pr={'高':0,'中':1,'低':2};
-  const rows=items.filter(i=>i.track===track&&GROUPS[group].f(i.status)).sort((a,b)=>rank(a.status)-rank(b.status)||(pr[a.priority]??3)-(pr[b.priority]??3)||String(a.org).localeCompare(String(b.org),'zh'));
+  const rows=items.filter(i=>i.track===track&&GROUPS[group].f(i.status)&&(!region||i.region===region)).sort((a,b)=>rank(a.status)-rank(b.status)||(pr[a.priority]??3)-(pr[b.priority]??3)||String(a.org).localeCompare(String(b.org),'zh'));
   if(!rows.length){$('list').innerHTML=`<div class="empty">${db?'这个分类下还没有记录。点右下角“新增一条”开始记。':'数据还没连上。稍等片刻，或刷新页面。'}</div>`;return}
   $('v_table').setAttribute('aria-pressed',view==='table');$('v_cards').setAttribute('aria-pressed',view==='cards');
   if(view==='table'){
@@ -196,7 +196,7 @@ function renderList(){
       const href=/^https?:\/\//.test(i.link||'')?i.link:'';
       return `<tr class="${closed?'closed':''}"><td class="c-org">${esc(i.org)}${i.priority?`<span class="sub">优先级 ${esc(i.priority)}</span>`:''}</td>
         <td><select class="status ${cls(i.status)}" data-id="${esc(i.id)}" aria-label="状态" ${canWrite?'':'disabled'}><option value="">未填</option>${STATUS.map(x=>`<option ${x===i.status?'selected':''}>${x}</option>`).join('')}</select></td>
-        <td class="c-role">${esc(i.role)}${i.direction||i.city?`<span class="sub">${esc([i.direction,i.city].filter(Boolean).join(' · '))}</span>`:''}</td>
+        <td class="c-role">${esc(i.role)}${i.direction||i.city||i.region?`<span class="sub">${esc([i.direction,i.region,i.city].filter(Boolean).join(' · '))}</span>`:''}</td>
         <td>${esc(i.type)}</td>
         <td class="c-date">${esc(i.applied||'—')}</td><td class="c-next">${esc(i.next)}</td><td class="c-last">${last?esc(last.d+' '+last.t):''}</td>
         <td style="white-space:nowrap"><button class="linkbtn" type="button" data-edit="${esc(i.id)}">${canWrite?'编辑':'详情'}</button>${href?` <a class="linkbtn" href="${esc(href)}" target="_blank" rel="noopener">链接</a>`:''}</td></tr>`}).join('')+'</tbody></table></div>';
@@ -208,7 +208,7 @@ function renderList(){
     return `<article class="card${closed?' closed':''}">
       <div class="row1"><div><div class="org">${esc(i.org)}</div><div class="role">${esc(i.role)}</div></div>
         <select class="status ${cls(i.status)}" data-id="${esc(i.id)}" aria-label="状态" ${canWrite?'':'disabled'}><option value="">未填</option>${STATUS.map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join('')}</select></div>
-      <div class="meta">${i.type?`<span class="pill">${esc(i.type)}</span>`:''}${i.priority?`<span class="pill${i.priority==='高'?' hi':''}">优先级 ${esc(i.priority)}</span>`:''}${i.direction?`<span>${esc(i.direction)}</span>`:''}${i.city?`<span>· ${esc(i.city)}</span>`:''}${i.applied?`<span>· 投递 ${esc(i.applied)}</span>`:''}</div>
+      <div class="meta">${i.type?`<span class="pill">${esc(i.type)}</span>`:''}${i.priority?`<span class="pill${i.priority==='高'?' hi':''}">优先级 ${esc(i.priority)}</span>`:''}${i.direction?`<span>${esc(i.direction)}</span>`:''}${i.region?`<span class="pill">${esc(i.region)}</span>`:''}${i.city?`<span>· ${esc(i.city)}</span>`:''}${i.applied?`<span>· 投递 ${esc(i.applied)}</span>`:''}</div>
       ${last?`<div class="latest">${esc(last.d)}　${esc(last.t)}</div>`:''}
       ${i.next?`<div class="next"><b>下一步</b>　${esc(i.next)}</div>`:''}
       <div class="actions"><button class="linkbtn" type="button" data-edit="${esc(i.id)}">${canWrite?'编辑 / 记进展':'查看详情'}</button>${href?`<a class="linkbtn" href="${esc(href)}" target="_blank" rel="noopener">打开投递页</a>`:(i.link?`<span style="color:var(--muted)">${esc(i.link)}</span>`:'')}</div>
@@ -225,7 +225,7 @@ function openEditor(item){
   const v=item||{track,status:'待投递',priority:'中'};
   $('dlgTitle').textContent=item?'编辑 / 记进展':'新增一条';
   $('f_status').innerHTML='<option value="">未填</option>'+STATUS.map(s=>`<option>${s}</option>`).join('');
-  for(const f of ['track','status','org','role','type','priority','direction','city','applied','contact','link','next','note']) $('f_'+f).value=v[f]??'';
+  for(const f of ['track','status','org','role','type','priority','direction','region','city','applied','contact','link','next','note']) $('f_'+f).value=v[f]??'';
   labelsFor($('f_track').value);
   draftLog=(v.log||[]).map(l=>({d:l.d,t:l.t})).sort((a,b)=>String(a.d).localeCompare(String(b.d)));
   $('log_d').value=today();$('log_t').value='';renderLogs();
@@ -237,8 +237,9 @@ function pushLog(){const t=$('log_t').value.trim();if(!t)return;draftLog.push({d
 function fail(e){const m={quota_exceeded:'记录数已达上限，先删掉一些旧记录。',revoked:'访问权限已变更，当前只能查看。',invalid_argument:'没有写入权限，当前只能查看。'}[e&&e.code]||'保存失败，请稍后再试。';$('banner').textContent=m;$('banner').hidden=false;if(e&&(e.code==='revoked'||e.code==='invalid_argument')){canWrite=false;render()}}
 
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-k]');if(t){track=t.dataset.k;group=0;try{localStorage.setItem('track',track)}catch(_){ }render();return}
+  const t=e.target.closest('[data-k]');if(t){track=t.dataset.k;group=0;region='';try{localStorage.setItem('track',track)}catch(_){ }render();return}
   const vw=e.target.closest('[data-v]');if(vw){view=vw.dataset.v;try{localStorage.setItem('view',view)}catch(_){ }render();return}
+  const rg=e.target.closest('[data-r]');if(rg){region=rg.dataset.r;render();return}
   const g=e.target.closest('[data-g]');if(g){group=+g.dataset.g;render();return}
   const ed=e.target.closest('[data-edit]');if(ed){openEditor(items.find(i=>i.id===ed.dataset.edit));return}
   const rm=e.target.closest('[data-rm]');if(rm){draftLog.splice(+rm.dataset.rm,1);renderLogs();return}
@@ -264,7 +265,7 @@ $('del').addEventListener('click',async()=>{
 $('form').addEventListener('submit',async e=>{
   e.preventDefault();if(!col)return;pushLog();
   const data={log:draftLog,updated:today()};
-  for(const f of ['track','status','org','role','type','priority','direction','city','applied','contact','link','next','note']) data[f]=$('f_'+f).value.trim();
+  for(const f of ['track','status','org','role','type','priority','direction','region','city','applied','contact','link','next','note']) data[f]=$('f_'+f).value.trim();
   $('save').disabled=true;
   try{ if(editing) await col.doc(editing).set(data); else await col.add(data); track=data.track; $('dlg').close() }catch(err){fail(err)} finally{$('save').disabled=!canWrite}
 });
@@ -293,9 +294,9 @@ function toMarkdown(){
   let md='# 求职投递台账\n\n> 导出时间：'+today()+'\n';
   for(const t of TRACKS){const rows=items.filter(i=>i.track===t.k);md+='\n## '+t.n+'（'+rows.length+'）\n\n';
     if(!rows.length){md+='_暂无记录_\n';continue}
-    md+='| '+t.org+' | '+t.role+' | '+t.type+' | 状态 | 投递日期 | 下一步 | 最新进展 |\n|---|---|---|---|---|---|---|\n';
+    md+='| '+t.org+' | '+t.role+' | '+t.type+' | 地区 | 状态 | 投递日期 | 下一步 | 最新进展 |\n|---|---|---|---|---|---|---|---|\n';
     for(const r of rows){const last=(r.log||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0];
-      md+='| '+[r.org,r.role,r.type,r.status||'未填',r.applied,r.next,last?last.d+' '+last.t:''].map(cell).join(' | ')+' |\n'}
+      md+='| '+[r.org,r.role,r.type,r.region,r.status||'未填',r.applied,r.next,last?last.d+' '+last.t:''].map(cell).join(' | ')+' |\n'}
     for(const r of rows.filter(x=>(x.log||[]).length)){md+='\n### '+r.org+' · '+r.role+'\n\n';for(const l of r.log)md+='- '+l.d+'　'+l.t+'\n'}}
   return md}
 function openIO(title,hint,text,importing){$('io_title').textContent=title;$('io_hint').textContent=hint;$('io_text').value=text;$('io_text').readOnly=!importing;$('io_apply').hidden=!importing;$('io_copy').hidden=importing;$('io').showModal()}
